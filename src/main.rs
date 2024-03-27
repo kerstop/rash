@@ -13,36 +13,66 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-fn get_tokens(input: &str) -> anyhow::Result<Vec<Token>> {
-    fn parse_token(chars: &mut Peekable<Chars>) -> Token {
-        let mut token = String::from(chars.next().unwrap());
-        loop {
-            match chars.next() {
-                Some(c) => {
-                    if c.is_whitespace() {
-                        break;
-                    }
-                    token.push(c);
-                }
-                None => break,
-            }
-        }
-        return Token::Text(token);
+fn eval(input: &str) -> (i32, String) {
+    let tokens = get_tokens(input).unwrap();
+
+    match tokens.get(0) {
+        Some(_) => todo!(),
+        None => todo!(),
     }
+
+    return (0, "".into());
+}
+
+fn parse_token(chars: &mut Peekable<Chars>) -> Token {
+    let mut token = String::from(chars.next().unwrap());
+    loop {
+        match chars.next() {
+            Some(c) => {
+                if c.is_whitespace() {
+                    break;
+                }
+                token.push(c);
+            }
+            None => break,
+        }
+    }
+    return match token.as_str() {
+        "echo" => Token::Echo,
+        _ => Token::Text(token),
+    }
+}
+
+fn parse_str(chars: &mut Peekable<Chars>) -> Token {
+    let delimiter = chars.next().unwrap();
+    let mut token = String::new();
+    loop {
+        match chars.next() {
+            Some(c) => {
+                if c == delimiter {
+                    break;
+                }
+                token.push(c);
+            }
+            None => break,
+        }
+    }
+
+    
+    return Token::Text(token);
+}
+
+fn get_tokens(input: &str) -> anyhow::Result<Vec<Token>> {
     let mut tokens = Vec::new();
     let mut chars = input.chars().peekable();
 
     loop {
         match chars.peek() {
-            Some(c) => {
-                if !c.is_whitespace() {
-                    tokens.push(parse_token(&mut chars));
-                }
-            }
-            None => {
-                tokens.push(Token::EOC);
-                break;
-            }
+            Some('\'' | '\"') => tokens.push(parse_str(&mut chars)),
+            Some(c) if !c.is_whitespace() => tokens.push(parse_token(&mut chars)),
+            Some(_) => (),
+            None => break,
+            
         }
     }
 
@@ -51,8 +81,8 @@ fn get_tokens(input: &str) -> anyhow::Result<Vec<Token>> {
 }
 
 #[derive(PartialEq, Eq, Debug)]
-pub enum Token {
-    EOC,
+enum Token {
+    Echo,
     Text(String),
 }
 
@@ -65,10 +95,9 @@ mod tests {
         let input = "echo hello world";
         let tokens = get_tokens(input).unwrap();
         let expected = vec![
-            Token::Text("echo".into()),
+            Token::Echo,
             Token::Text("hello".into()),
             Token::Text("world".into()),
-            Token::EOC,
         ];
         assert_eq!(tokens, expected)
     }
@@ -78,18 +107,16 @@ mod tests {
         let input = "echo \"hello world\"";
         let tokens = get_tokens(input).unwrap();
         let expected = vec![
-            Token::Text("echo".into()),
+            Token::Echo,
             Token::Text("hello world".into()),
-            Token::EOC,
         ];
         assert_eq!(tokens, expected);
 
         let input = "echo \'hello world\'";
         let tokens = get_tokens(input).unwrap();
         let expected = vec![
-            Token::Text("echo".into()),
+            Token::Echo,
             Token::Text("hello world".into()),
-            Token::EOC,
         ];
         assert_eq!(tokens, expected)
     }
