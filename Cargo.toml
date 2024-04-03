@@ -5,3 +5,9 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.81"
+pest = "2.7.8"
+pest_derive = "2.7.8"
+
+[[bin]]
+name = "csv"
+path = "src/csv.rs"

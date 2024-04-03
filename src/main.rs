@@ -2,6 +2,10 @@ use std::{io::BufRead, iter::Peekable, str::Chars};
 
 use anyhow::{anyhow, Ok};
 
+#[derive(pest_derive::Parser)]
+#[grammar = "src/bash.pest"]
+struct Parser;
+
 fn main() -> anyhow::Result<()> {
     let mut input = std::io::stdin().lock();
     loop {
